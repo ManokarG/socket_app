@@ -1,18 +1,29 @@
-const express=require('express');
-const app=express();
-const PORT=process.env.PORT||8080;
-const http=require('http').Server(app);
-const io=require('socket.io')(http);
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 8080;
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+var count = 0;
 
-app.use(express.static(__dirname+'/public'));
+app.use(express.static(__dirname + '/public'));
 
-io.on('connection',function(socket){
-	console.log('User connected via socket.io!');
-	socket.on('disconnect',function(){
-		console.log('User disconnected via socket.io!');
+io.on('connection', function(socket) {
+	count += 1;
+	console.log(`Client ${count} connected`);
+	socket.emit('onconnection',count);
+	socket.on('disconnect', function() {
+		console.log(`Client ${count} disconnected`);
+		count -= 1;
+	});
+
+	socket.on('message', function(message) {
+		console.log(`${message.text}`);
+		socket.broadcast.emit('message', {
+			text: message.text
+		});
 	});
 });
 
-http.listen(PORT,function(){
+http.listen(PORT, function() {
 	console.log(`Server running on ${PORT}`);
 });
