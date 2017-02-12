@@ -8,11 +8,17 @@ const now = moment();
 var count = 0;
 
 app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public/html'));
 
 io.on('connection', function(socket) {
 	count += 1;
 	console.log(`Client ${count} connected`);
 
+socket.emit('message',{
+	text:'Welcome to chat application!',
+	time:now.valueOf(),
+	name:'System'
+});
 	socket.on('disconnect', function() {
 		console.log(`Client ${count} disconnected`);
 		count -= 1;
@@ -22,7 +28,8 @@ io.on('connection', function(socket) {
 		console.log(`${now.utc(message.time).local().format('h:mm a')}  ${message.text}`);
 		io.emit('message', {
 			text: message.text,
-			time: message.time
+			time: message.time,
+			name:message.name
 		});
 	});
 });
